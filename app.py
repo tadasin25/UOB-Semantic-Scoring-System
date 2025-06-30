@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import torch
 from io import BytesIO
-from FlagEmbedding import BGEM3FlagModel
+from sentence_transformers import SentenceTransformer
 from transformers import pipeline
 
 # Set UOB-style page config
@@ -46,7 +46,7 @@ st.write("Upload an Excel file with `chatbot_answer` and `reference_answer` colu
 # Load models once
 @st.cache_resource
 def load_models():
-    dense = BGEM3FlagModel('BAAI/bge-m3', use_fp16=False)
+    dense = SentenceTransformer("thenlper/gte-small")
     nli_pipe = pipeline("text-classification", model="MoritzLaurer/mDeBERTa-v3-base-mnli-xnli")
     return dense, nli_pipe
 
@@ -64,13 +64,9 @@ partly_correct_threshold = st.sidebar.slider(
 # Scoring logic (with dynamic thresholds)
 def evaluate_answers(chatbot, reference, fully_thresh, partly_thresh):
     try:
-        output = dense_model.encode([chatbot, reference], return_dense=True, return_sparse=False)
-        emb_chatbot, emb_ref = output['dense_vecs']
-        sim_score = torch.nn.functional.cosine_similarity(
-            torch.from_numpy(emb_chatbot),
-            torch.from_numpy(emb_ref),
-            dim=0
-        ).item()
+        emb_chatbot = dense_model.encode(chatbot, convert_to_tensor=True)
+        emb_ref = dense_model.encode(reference, convert_to_tensor=True)
+        sim_score = torch.nn.functional.cosine_similarity(emb_chatbot, emb_ref, dim=0).item()
 
         nli_result = nli(f"{reference} </s> {chatbot}")
         label = nli_result[0]['label'].lower()
