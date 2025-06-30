@@ -46,7 +46,7 @@ st.write("Upload an Excel file with `chatbot_answer` and `reference_answer` colu
 # Load models once
 @st.cache_resource
 def load_models():
-    dense = SentenceTransformer("thenlper/gte-small")
+    dense = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
     nli_pipe = pipeline("text-classification", model="MoritzLaurer/mDeBERTa-v3-base-mnli-xnli")
     return dense, nli_pipe
 
