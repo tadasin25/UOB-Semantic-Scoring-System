@@ -3,4 +3,4 @@ pandas
 torch
 transformers
 openpyxl
-FlagEmbedding @ git+https://github.com/FlagOpen/FlagEmbedding.git
+git+https://github.com/FlagOpen/FlagEmbedding.git
